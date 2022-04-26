@@ -2,7 +2,7 @@ pro resample_percentage_tree
 
   ; read 2m tree canopy data
 
-  data = READ_TIFF("/largedisk_a/tree_canopy/Tree_canopy_Minneapolis--St-Paul--MN--WI.tif",geotiff = geotiff)
+  data = READ_TIFF("/largedisk_a/tree_canopy/Tree_canopy_Minneapolis--St-Paul--MN--WI_Tanu.tif",geotiff = geotiff)
   ;print,ESA_data[0,0]
 
   ns = n_elements(data[*,0])
@@ -17,7 +17,7 @@ pro resample_percentage_tree
       ;print,j*5l,(j+1)*5l-1,i*5l,(i+1)*5l-1
       temp = data[j*5l: (j+1)*5l-1,i*5l: (i+1)*5l-1]
       index = where(temp eq 1, count)
-      if count gt 0 then begin
+      if count ge 0 then begin
         result[j,i] = count/25.0
       endif
     endfor
@@ -35,7 +35,7 @@ pro resample_percentage_tree
       ;print,j*5l,(j+1)*5l-1,i*5l,(i+1)*5l-1
       temp = data[j*15l: (j+1)*15l-1,i*15l: (i+1)*15l-1]
       index = where(temp eq 1, count)
-      if count gt 0 then begin
+      if count ge 0 then begin
         result[j,i] = count/225.0
       endif
     endfor
