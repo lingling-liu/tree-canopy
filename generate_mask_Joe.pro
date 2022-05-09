@@ -2,8 +2,8 @@ pro generate_mask_Joe
 
   ; read 2m tree canopy data
 
-  ;data = READ_TIFF("/largedisk_a/tree_canopy/tcma_lc_finalv1_2015.tif",geotiff = geotiff)
-  data = READ_TIFF("/largedisk_a/tree_canopy/original_data/tcma_lc_treecanopy_v1.tif",geotiff = geotiff)
+  data = READ_TIFF("/largedisk_a/tree_canopy/tcma_lc_finalv1_2015.tif",geotiff = geotiff); smaller
+  ;data = READ_TIFF("/largedisk_a/tree_canopy/original_data/tcma_lc_treecanopy_v1.tif",geotiff = geotiff)
   ;print,ESA_data[0,0]
 
   ns = n_elements(data[*,0])
@@ -47,7 +47,7 @@ pro generate_mask_Joe
   endfor
 
   geotiff.MODELPIXELSCALETAG = [30.0000000000000000, 30.0000000000000000, 0.0000000000000000]
-  tiff_file="/largedisk_a/tree_canopy/tcma_lc_treecanopy_30m_mask.tif"
+  tiff_file="/largedisk_a/tree_canopy/tcma_lc_finalv1_30m_mask.tif"
   WRITE_TIFF, tiff_file, result, GEOTIFF=geotiff,/float
 
 end
