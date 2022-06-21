@@ -30,7 +30,8 @@ pro generate_table_tree_canopy_nasa_joe
   result[1,*] = Y
   print,min(result),max(result)
    
-  seed = 135L
+  ;seed = 135L
+  seed = !NULL
   count =Long(n_elements(X))
   array = indgen(count,/long)
   numberToSelect = 1000000
