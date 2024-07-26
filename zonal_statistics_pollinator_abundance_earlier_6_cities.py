@@ -3,11 +3,12 @@ import geopandas as gpd
 from rasterstats import zonal_stats
 import pandas as pd
 import os
+import numpy as np
 
 # Define the base folders
-raster_folder = r'D:\Shared drives\Urban Workflow\Data\Pollination\INVEST\6_cities'
+raster_folder = r'D:\Shared drives\Urban Workflow\Data\Pollination\INVEST\Earlier_6_cities\Masked'
 shapefile_base_folder = r'D:\Shared drives\Urban Workflow\Data\Pollination\SVI'
-output_folder = r'D:\Shared drives\Urban Workflow\Data\Pollination\output'
+output_folder = r'D:\Shared drives\Urban Workflow\Data\Pollination\output\\Earlier_6_cities'
 
 # Ensure the output folder exists
 os.makedirs(output_folder, exist_ok=True)
@@ -17,27 +18,28 @@ raster_files = [os.path.join(raster_folder, f) for f in os.listdir(raster_folder
 
 # Define a dictionary to map city names to state names
 city_to_state = {
-    'Baltimore': 'Maryland',
-    'Boston': 'Massachusetts',
-    'Miami': 'Florida',
-    'Phoenix': 'Arizona',
-    'Los_Angeles': 'California',
+    'Denver': 'Colorado',
+    'New_York': 'NewYork',
+    'San_Antonio': 'Texas',
     'San_Francisco': 'California',
+    'annual_TCMA': 'Minnesota',
+    'Chicago': 'Illinois',
 }
 
 # List of cities
-cities = ["Boston", "Baltimore", "Miami", "Phoenix", "Los_Angeles"]
+cities = ["Denver", "New_York", "San_Antonio", "San_Francisco", "TCMA", "Chicago"]
 
 # Function to extract the city name from the raster file name
 def extract_city_name(raster_filename):
     parts = raster_filename.split('_')
-    if parts[-2] in ['Los', 'San']:
+    if 'San' in parts or 'TCMA' in parts or 'New' in parts:
         return '_'.join(parts[-2:])
     else:
         return parts[-1]  # Assuming the city name is the last part
 
 # Loop through each raster file
 for raster_file in raster_files:
+    print('          ')
     # Open the raster file
     with rasterio.open(raster_file) as src:
         raster_data = src.read(1)
@@ -49,9 +51,11 @@ for raster_file in raster_files:
 
         # Extract the city name
         city_name = extract_city_name(raster_base)
+        print(city_name)
         
         # Get the corresponding state name from the city_to_state dictionary
-        state_name = city_to_state.get(city_name)
+        state_name = city_to_state.get(city_name, None)
+        print(state_name)
         
         if state_name is not None:
             # Define the path to the corresponding shapefile
@@ -66,9 +70,14 @@ for raster_file in raster_files:
                 # Reproject the shapefile to match the raster CRS if necessary
                 if shapefile.crs != raster_crs:
                     shapefile = shapefile.to_crs(raster_crs)
+                
+                # Mask raster data to only include values >= 0
+                mask = raster_data >= 0
+                masked_raster_data = np.where(mask, raster_data, np.nan)
+                print(np.nanmax(masked_raster_data))
 
                 # Perform zonal statistics
-                stats = zonal_stats(shapefile, raster_data, affine=affine, stats=['mean', 'min', 'max', 'sum', 'count'])
+                stats = zonal_stats(shapefile, masked_raster_data, affine=affine, stats=['mean', 'min', 'max', 'sum', 'count'])
 
                 # Add the results to a DataFrame
                 df_stats = pd.DataFrame(stats)
