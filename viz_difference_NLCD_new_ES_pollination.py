@@ -1,11 +1,15 @@
 import rasterio
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
+from matplotlib.ticker import ScalarFormatter
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # File paths
-file1 = r"D:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_general_annual_NLCD_tree.tif"
-file2 = r"D:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_general_annual_NLCD.tif"
+file1 = r"G:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_general_annual_NLCD_tree.tif"
+file2 = r"G:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_general_annual_NLCD.tif"
+output_raster = r"G:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_difference_05082025.tif"
+output_diff_map = r"G:\Shared drives\Urban Workflow\Data\Urban_LTER\Figure\052025\pollinator_abundance_difference_map_05082025.png"
+output_hist = r"G:\Shared drives\Urban Workflow\Data\Urban_LTER\Figure\052025\pollinator_abundance_difference_histogram_05082025.png"
 
 # Open the raster files
 with rasterio.open(file1) as src1:
@@ -19,53 +23,60 @@ with rasterio.open(file2) as src2:
 if raster1.shape != raster2.shape:
     raise ValueError("The rasters do not have the same dimensions")
 
-# Valid value range (adjust as needed for pollination data)
+# Define valid data range
 valid_min = 0
 valid_max = 0.28
 
-# Mask the values outside the valid range
+# Apply mask to retain valid values
 mask = (raster1 >= valid_min) & (raster1 <= valid_max) & (raster2 >= valid_min) & (raster2 <= valid_max)
 
-# Calculate the difference
+# Calculate difference
 difference = np.where(mask, raster1 - raster2, np.nan)
 
-# Remove NaN values for min and max calculation
+# Extract valid differences for stats and histogram
 valid_diff = difference[~np.isnan(difference)]
 
-# Compute min and max values
+# Compute stats
 min_val = np.min(valid_diff)
 max_val = np.max(valid_diff)
-print(min_val)
-print(max_val)
+print("Min:", min_val)
+print("Max:", max_val)
 
-# Define the colormap
-cmap = ListedColormap(plt.cm.Greens(np.linspace(0, 1, 256)))
-
-# Save the difference raster
-output_file = r"D:\Shared drives\Urban Workflow\Data\Urban_LTER\Pollination\06-26-2024\pollinator_abundance_difference.tif"
-with rasterio.open(output_file, 'w', **profile) as dst:
+# Save difference raster
+with rasterio.open(output_raster, 'w', **profile) as dst:
     dst.write(difference, 1)
 
-# Plot the difference raster
-plt.figure(figsize=(5, 5))
-plt.imshow(difference, cmap='Greens', vmin=min_val, vmax=max_val)
-plt.colorbar(label='Pollinator Abundance Difference')
-plt.title('Increase in Pollinator Abundance')
-plt.axis('off')  # Remove the x and y axis
+# Plot and save difference map with shortened colorbar and title
+fig, ax = plt.subplots(figsize=(5, 5))
+fig.subplots_adjust(right=0.82)  # Shift plot left to leave room for colorbar
+img = ax.imshow(difference, cmap='Greens', vmin=min_val, vmax=max_val)
+ax.axis('off')
+
+# Add shortened vertical colorbar
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.2)  # Adjust pad as needed
+cbar = plt.colorbar(img, cax=cax, shrink=0.5)
+
+# Add figure title (not on the colorbar)
+fig.suptitle('Pollinator Abundance Difference', fontsize=14, y=0.95)
+
+plt.savefig(output_diff_map, dpi=300, bbox_inches='tight')
 plt.show()
 
-# Plot the histogram of pollinator abundance differences
+# Plot and save histogram
 plt.figure(figsize=(5, 5))
 counts, bins, patches = plt.hist(valid_diff, bins=50, color='blue', alpha=0.7)
-# plt.title('Histogram of Pollinator Abundance Differences')
 plt.xlabel('Pollinator Abundance Difference', fontsize=16)
-plt.ylabel('Number of Pixels', fontsize=16)  # Changed ylabel to 'Number of Pixels'
-plt.xticks(fontsize=12)  # Set x-tick font size
-plt.yticks(fontsize=12)  # Set y-tick font size
-plt.grid(False)  # Remove grid lines
+plt.ylabel('Number of Pixels', fontsize=14)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
 
-# Save histogram
-histogram_output_file = r"D:\Shared drives\Urban Workflow\Data\Urban_LTER\Figure\pollinator_abundance_difference_histogram.png"
-plt.savefig(histogram_output_file, dpi=300, bbox_inches='tight')
+# Format y-axis with scientific notation
+ax = plt.gca()
+formatter = ScalarFormatter(useMathText=True)
+formatter.set_scientific(True)
+formatter.set_powerlimits((6, 6))
+ax.yaxis.set_major_formatter(formatter)
 
+plt.savefig(output_hist, dpi=300, bbox_inches='tight')
 plt.show()
