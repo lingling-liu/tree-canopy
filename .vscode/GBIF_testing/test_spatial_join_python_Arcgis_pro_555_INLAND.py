@@ -5,9 +5,9 @@ from pandas.testing import assert_frame_equal
 # -----------------------------
 # Paths
 # -----------------------------
-csv_gpd = r"E:\FInal\N_species\polygons\species_by_inland10km\per_batch_utf8sig\species_batch_2101_species_inland10km.csv"
-csv_arc = r"C:\Users\liu02034\Downloads\bacth_2101_SJ_Arcgis_Pro_inland.csv"
-out_diff_csv = r"C:\Users\liu02034\Downloads\species_batch_2101_inland10km_differences_side_by_side.csv"
+csv_gpd = r"E:\FInal\N_species\polygons\species_by_inland10km\per_batch_utf8sig\species_batch_2102_species_inland10km.csv"
+csv_arc = r"C:\Users\liu02034\Downloads\bacth_2102_SJ_Arcgis_Pro_inland.csv"
+out_diff_csv = r"C:\Users\liu02034\Downloads\species_batch_2102_inland10km_differences_side_by_side.csv"
 
 # -----------------------------
 # Robust CSV loader for ArcGIS exports
